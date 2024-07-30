@@ -1,27 +1,52 @@
 import re
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-# functions to extract text features using TF-IDF vectorization and extract specific invoice details like invoice number, date, and total amount from a given text.
+def extract_invoice_features(text, filename):
+    features = {}
 
-def extract_features(text):
-    vectorizer = TfidfVectorizer()
-    features = vectorizer.fit_transform([text])
+    invoice_number_match = re.search(r'invoice_(\d+)', filename, re.IGNORECASE)
+    features['invoice_number'] = invoice_number_match.group(
+        1) if invoice_number_match else None
+
+    date_match = re.search(r'\b(\d{2}\.\d{2}\.\d{4})\b', text)
+    features['date'] = date_match.group(1) if date_match else None
+
+    total_amount_match = re.search(
+        r'([\d,]+)\s+Gesamtsumme', text) or re.search(r'([\d,]+)\s+Rechnungsbetrag', text)
+    features['total_amount'] = total_amount_match.group(
+        1) if total_amount_match else None
+
+    customer_info_match = re.search(
+        r'(.*?)\d{5}\s+\w+\s*$', text, re.MULTILINE | re.DOTALL)
+    features['customer'] = customer_info_match.group(
+        1).strip() if customer_info_match else None
     return features
 
 
-def extract_invoice_features(text):
-    invoice_number_match = re.search(r'Rechnung Nr\.\s+(\d+)', text)
-    date_match = re.search(r'Datum\s+(\d{2}\.\d{2}\.\d{4})', text)
-    total_amount_match = re.search(
-        r'Rechnungsbetrag EUR\s+(\d+,\d{2})', text)
-
-    invoice_number = invoice_number_match.group(
-        1) if invoice_number_match else None
-    date = date_match.group(1) if date_match else None
-    total_amount = total_amount_match.group(1) if total_amount_match else None
-    return {
-        'invoice_number': invoice_number,
-        'date': date,
-        'total_amount': total_amount
+def analyze_invoice_structure(text):
+    lines = text.split("\n")
+    structure = {
+        'header': [],
+        'footer': [],
+        'body': [],
+        'tables': []
     }
+
+    # Detect header (first few lines)
+    header_end = min(5, len(lines) // 4)
+    structure['header'] = lines[:header_end]
+
+    # Detect footer (last few lines)
+    footer_start = max(-5, -len(lines) // 4)
+    structure['footer'] = lines[footer_start:]
+
+    # Everything else is considered body
+    structure['body'] = lines[header_end:footer_start]
+
+    # Detect tables (simplified approach)
+    table_pattern = re.compile(r'\s{2,}')
+    for line in structure['body']:
+        if table_pattern.search(line):
+            structure['tables'].append(line)
+
+    return structure

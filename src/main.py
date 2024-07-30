@@ -1,5 +1,5 @@
 from text_extraction import extract_text_from_pdf
-from feature_extraction import extract_features, extract_invoice_features
+from feature_extraction import extract_invoice_features, analyze_invoice_structure
 from database import InvoiceDatabase
 import os
 
@@ -14,26 +14,34 @@ def get_pdf_files(directory):
     return pdf_files
 
 
-def main(input_pdf_path, database_pdf_paths):
+def main(input_pdf_paths, database_pdf_paths):
     db = InvoiceDatabase()
 
     # Process and add each invoice in the database
     for pdf_path in database_pdf_paths:
         text = extract_text_from_pdf(pdf_path)
-        features = extract_invoice_features(text)
-        db.add_invoice({'path': pdf_path, 'text': text, 'features': features})
+        features = extract_invoice_features(text, os.path.basename(pdf_path))
+        structure = analyze_invoice_structure(text)
+        db.add_invoice({'path': pdf_path, 'text': text,
+                       'features': features, 'structure': structure})
 
-    for input_path in input_pdf_path:
+    for input_path in input_pdf_paths:
         input_text = extract_text_from_pdf(input_path)
-        input_features = extract_invoice_features(input_text)
+        input_features = extract_invoice_features(
+            input_text, os.path.basename(input_path))
+        input_structure = analyze_invoice_structure(input_text)
 
-        # Find the most similar invoice in the database
         similar_invoice, similarity_score = db.find_most_similar(
-            {'text': input_text, 'features': input_features})
+            {'text': input_text, 'features': input_features, 'structure': input_structure})
 
-        print(f"Most similar invoice: {similar_invoice['path']}")
-        print(f"Similarity score: {similarity_score}")
-        print(f"Percentage: {similarity_score*100}%")
+        print(f"Input invoice: {os.path.basename(input_path)}")
+        print(f"Most similar invoice: {
+              os.path.basename(similar_invoice['path'])}")
+        print(f"Similarity score: {similarity_score:.2f}")
+        # print("Features:")
+        # for key, value in input_features.items():
+        #     print(f"  {key}: {value}")
+        # print()
 
 
 # Passing PDF Files to test
