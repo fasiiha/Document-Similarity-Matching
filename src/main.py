@@ -5,7 +5,6 @@ import os
 
 
 def get_pdf_files(directory):
-    # Get a list of all PDF files in a given directory.
     pdf_files = []
     for root, _, files in os.walk(directory):
         for file in files:
@@ -38,17 +37,12 @@ def main(input_pdf_paths, database_pdf_paths):
         print(f"Most similar invoice: {
               os.path.basename(similar_invoice['path'])}")
         print(f"Similarity score: {similarity_score:.2f}")
-        # print("Features:")
-        # for key, value in input_features.items():
-        #     print(f"  {key}: {value}")
-        # print()
 
 
 # Passing PDF Files to test
 if __name__ == "__main__":
     train_base_path = "C:/Users/fasih/Desktop/Document Similarity Matching/data/train"
     test_base_path = "C:/Users/fasih/Desktop/Document Similarity Matching/data/test"
-
     input_pdf_paths = get_pdf_files(test_base_path)
     database_pdf_paths = get_pdf_files(train_base_path)
 

@@ -3,11 +3,9 @@ import re
 
 def extract_invoice_features(text, filename):
     features = {}
-
     invoice_number_match = re.search(r'invoice_(\d+)', filename, re.IGNORECASE)
     features['invoice_number'] = invoice_number_match.group(
         1) if invoice_number_match else None
-
     date_match = re.search(r'\b(\d{2}\.\d{2}\.\d{4})\b', text)
     features['date'] = date_match.group(1) if date_match else None
 
@@ -32,21 +30,14 @@ def analyze_invoice_structure(text):
         'tables': []
     }
 
-    # Detect header (first few lines)
     header_end = min(5, len(lines) // 4)
     structure['header'] = lines[:header_end]
-
-    # Detect footer (last few lines)
     footer_start = max(-5, -len(lines) // 4)
     structure['footer'] = lines[footer_start:]
-
-    # Everything else is considered body
     structure['body'] = lines[header_end:footer_start]
 
-    # Detect tables (simplified approach)
     table_pattern = re.compile(r'\s{2,}')
     for line in structure['body']:
         if table_pattern.search(line):
             structure['tables'].append(line)
-
     return structure

@@ -14,9 +14,6 @@ class InvoiceDatabase:
         max_similarity = 0
         most_similar_invoice = None
         for invoice in self.invoices:
-            # print(f"invoice['text'] {invoice['text']}")
-            # print(f"input_invoice['text'] {input_invoice['text']}")
-
             text_similarity = calculate_cosine_similarity(
                 invoice['text'], input_invoice['text'])
             structure_similarity = calculate_jaccard_similarity(
@@ -25,7 +22,7 @@ class InvoiceDatabase:
                 set(invoice['features'].items()), set(input_invoice['features'].items()))
 
             combined_similarity = (
-                0.6 * text_similarity) + (0.2 * structure_similarity) + (0.2 * feature_similarity)
+                text_similarity * 0.8 + structure_similarity * 0.2 + feature_similarity * 0.1)
             if combined_similarity > max_similarity:
                 max_similarity = combined_similarity
                 most_similar_invoice = invoice
