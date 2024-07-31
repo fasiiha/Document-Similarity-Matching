@@ -17,12 +17,12 @@ class InvoiceDatabase:
             text_similarity = calculate_cosine_similarity(
                 invoice['text'], input_invoice['text'])
             structure_similarity = calculate_jaccard_similarity(
-                set(str(invoice['structure'])), set(str(input_invoice['structure'])))
+                set(str(invoice['structure']).split()), set(str(input_invoice['structure']).split()))
             feature_similarity = calculate_jaccard_similarity(
                 set(invoice['features'].items()), set(input_invoice['features'].items()))
 
             combined_similarity = (
-                text_similarity * 0.8 + structure_similarity * 0.2 + feature_similarity * 0.1)
+                text_similarity * 0.9 + structure_similarity * 0.05 + feature_similarity * 0.05)
             if combined_similarity > max_similarity:
                 max_similarity = combined_similarity
                 most_similar_invoice = invoice

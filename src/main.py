@@ -37,6 +37,7 @@ def main(input_pdf_paths, database_pdf_paths):
         print(f"Most similar invoice: {
               os.path.basename(similar_invoice['path'])}")
         print(f"Similarity score: {similarity_score:.2f}")
+        print()
 
 
 # Passing PDF Files to test
